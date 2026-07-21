@@ -1,0 +1,20 @@
+[workspace]
+name = "nextpnr"
+channels = ["conda-forge"]
+platforms = ["win-64", "linux-64", "osx-64", "osx-arm64"]
+
+[dependencies]
+boost-cpp = "*"
+cmake = ">=3.25"
+cxx-compiler = "*"
+eigen = "*"
+git = "*"
+just = "*"
+ninja = "*"
+python = ">=3.9"
+qt6-main = ">=6,<7"
+rust = "*"
+xz = "*"
+
+[pypi-dependencies]
+apycula = "*"
