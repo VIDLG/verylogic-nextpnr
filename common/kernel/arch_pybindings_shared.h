@@ -127,6 +127,79 @@ fn_wrapper_0a<Context, decltype(&Context::archId), &Context::archId, conv_to_str
 fn_wrapper_2a_v<Context, decltype(&Context::writeSVG), &Context::writeSVG, pass_through<std::string>,
                 pass_through<std::string>>::def_wrap(ctx_cls, "writeSVG");
 
+py::class_<DecalId>(m, "DecalId");
+py::class_<DecalXY>(m, "DecalXY")
+        .def_property_readonly("decal", [](const DecalXY &decal_xy) { return decal_xy.decal; })
+        .def_readonly("x", &DecalXY::x)
+        .def_readonly("y", &DecalXY::y);
+
+ctx_cls.def("getGridDimX", [](const Context &ctx) { return ctx.getGridDimX(); });
+ctx_cls.def("getGridDimY", [](const Context &ctx) { return ctx.getGridDimY(); });
+ctx_cls.def("getTileBelDimZ", [](const Context &ctx, int x, int y) { return ctx.getTileBelDimZ(x, y); });
+ctx_cls.def("getTilePipDimZ", [](const Context &ctx, int x, int y) { return ctx.getTilePipDimZ(x, y); });
+
+ctx_cls.def("getBelPins", [](Context &ctx, const std::string &name) {
+    py::list pins;
+    BelId bel = ctx.getBelByName(IdStringList::parse(&ctx, name));
+    for (IdString pin : ctx.getBelPins(bel))
+        pins.append(pin.str(&ctx));
+    return pins;
+});
+
+ctx_cls.def("getGroups", [](Context &ctx) {
+    py::list groups;
+    for (GroupId group : ctx.getGroups())
+        groups.append(ctx.getGroupName(group).str(&ctx));
+    return groups;
+});
+ctx_cls.def("getGroupBels", [](Context &ctx, const std::string &name) {
+    py::list bels;
+    GroupId group = ctx.getGroupByName(IdStringList::parse(&ctx, name));
+    for (BelId bel : ctx.getGroupBels(group))
+        bels.append(ctx.getBelName(bel).str(&ctx));
+    return bels;
+});
+ctx_cls.def("getGroupWires", [](Context &ctx, const std::string &name) {
+    py::list wires;
+    GroupId group = ctx.getGroupByName(IdStringList::parse(&ctx, name));
+    for (WireId wire : ctx.getGroupWires(group))
+        wires.append(ctx.getWireName(wire).str(&ctx));
+    return wires;
+});
+ctx_cls.def("getGroupPips", [](Context &ctx, const std::string &name) {
+    py::list pips;
+    GroupId group = ctx.getGroupByName(IdStringList::parse(&ctx, name));
+    for (PipId pip : ctx.getGroupPips(group))
+        pips.append(ctx.getPipName(pip).str(&ctx));
+    return pips;
+});
+ctx_cls.def("getGroupGroups", [](Context &ctx, const std::string &name) {
+    py::list groups;
+    GroupId group = ctx.getGroupByName(IdStringList::parse(&ctx, name));
+    for (GroupId child : ctx.getGroupGroups(group))
+        groups.append(ctx.getGroupName(child).str(&ctx));
+    return groups;
+});
+
+ctx_cls.def("getBelDecal", [](Context &ctx, const std::string &name) {
+    return ctx.getBelDecal(ctx.getBelByName(IdStringList::parse(&ctx, name)));
+});
+ctx_cls.def("getWireDecal", [](Context &ctx, const std::string &name) {
+    return ctx.getWireDecal(ctx.getWireByName(IdStringList::parse(&ctx, name)));
+});
+ctx_cls.def("getPipDecal", [](Context &ctx, const std::string &name) {
+    return ctx.getPipDecal(ctx.getPipByName(IdStringList::parse(&ctx, name)));
+});
+ctx_cls.def("getGroupDecal", [](Context &ctx, const std::string &name) {
+    return ctx.getGroupDecal(ctx.getGroupByName(IdStringList::parse(&ctx, name)));
+});
+ctx_cls.def("getDecalGraphics", [](const Context &ctx, const DecalId &decal) {
+    py::list graphics;
+    for (const GraphicElement &graphic : ctx.getDecalGraphics(decal))
+        graphics.append(graphic);
+    return graphics;
+});
+
 fn_wrapper_2a<Context, decltype(&Context::isBelLocationValid), &Context::isBelLocationValid, pass_through<bool>,
               conv_from_str<BelId>, pass_through<bool>>::def_wrap(ctx_cls, "isBelLocationValid");
 

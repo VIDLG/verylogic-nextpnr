@@ -23,6 +23,35 @@ Likewise, the architecture identifiers `BelId`, `WireId` and `PipId` are also tr
 
 To query the FPGA architecture, use the functions described in the [Architecture API documentation](archapi.md). Ranges can be iterated over in the same way as any other Python range.
 
+## Architecture Graphics
+
+BELs, wires, PIPs and groups can be enumerated using `ctx.getBels()`, `ctx.getWires()`, `ctx.getPips()` and `ctx.getGroups()`. These methods return stable resource names; the same names are accepted by the corresponding decal methods:
+
+```python
+bel = next(iter(ctx.getBels()))
+decal_xy = ctx.getBelDecal(bel)
+
+for element in ctx.getDecalGraphics(decal_xy.decal):
+    absolute_x1 = decal_xy.x + element.x1
+    absolute_y1 = decal_xy.y + element.y1
+    absolute_x2 = decal_xy.x + element.x2
+    absolute_y2 = decal_xy.y + element.y2
+```
+
+The available decal methods are `getBelDecal()`, `getWireDecal()`, `getPipDecal()` and `getGroupDecal()`. A `DecalXY` has read-only `decal`, `x` and `y` fields. Its `x` and `y` values are offsets that must be added to the coordinates of each returned `GraphicElement`, as shown above. Coordinates and element types, including `TYPE_LOCAL_LINE` and `TYPE_LOCAL_ARROW`, are returned unchanged from the architecture implementation.
+
+`GraphicElement` exposes `type`, `style`, `x1`, `y1`, `x2`, `y2`, `z` and `text`. `DecalId` is intentionally opaque: it may be stored and passed to `getDecalGraphics()`, but its architecture-specific representation is not part of the Python API.
+
+Group contents can be queried by stable name using `getGroupBels()`, `getGroupWires()`, `getGroupPips()` and `getGroupGroups()`. BEL pins can be enumerated using `getBelPins()`. Device dimensions are available from `getGridDimX()`, `getGridDimY()`, `getTileBelDimZ(x, y)` and `getTilePipDimZ(x, y)`.
+
+Graphics availability depends on the architecture's existing graphics implementation. A resource or architecture without graphics returns an empty iterable; the binding does not synthesize replacement geometry.
+
+A smoke test for these APIs can be run against an iCE40 LP384 build with:
+
+```console
+nextpnr-ice40 --lp384 --package qn32 --run python/graphics_smoke.py
+```
+
 ## Netlist Access
 
 ### Accessing nets

@@ -94,3 +94,33 @@ jobs:
         build_nextpnr
         run_tests
         run_archcheck
+
+  Windows-artifacts:
+    name: Windows x64 binaries
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - uses: prefix-dev/setup-pixi@v0.10.0
+      with:
+        pixi-version: v0.66.0
+        frozen: true
+        cache: true
+
+    - name: Build standalone binaries
+      run: |
+        pixi run just build-ice40
+        pixi run just build-full
+
+    - name: Package and test standalone binaries
+      run: pixi run pwsh -NoProfile -File .github/ci/package_windows.ps1
+
+    - name: Upload Windows binaries
+      uses: actions/upload-artifact@v4
+      with:
+        name: nextpnr-windows-x64
+        path: dist/nextpnr-windows-x64
+        if-no-files-found: error
+        retention-days: 14

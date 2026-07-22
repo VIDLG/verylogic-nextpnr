@@ -104,6 +104,8 @@ PYBIND11_EMBEDDED_MODULE(MODULE_NAME, m)
             .value("TYPE_BOX", GraphicElement::TYPE_BOX)
             .value("TYPE_CIRCLE", GraphicElement::TYPE_CIRCLE)
             .value("TYPE_LABEL", GraphicElement::TYPE_LABEL)
+            .value("TYPE_LOCAL_ARROW", GraphicElement::TYPE_LOCAL_ARROW)
+            .value("TYPE_LOCAL_LINE", GraphicElement::TYPE_LOCAL_LINE)
             .export_values();
 
     py::enum_<GraphicElement::style_t>(m, "GraphicElementStyle")
@@ -112,6 +114,16 @@ PYBIND11_EMBEDDED_MODULE(MODULE_NAME, m)
             .value("STYLE_HIDDEN", GraphicElement::STYLE_HIDDEN)
             .value("STYLE_INACTIVE", GraphicElement::STYLE_INACTIVE)
             .value("STYLE_ACTIVE", GraphicElement::STYLE_ACTIVE)
+            .value("STYLE_HIGHLIGHTED0", GraphicElement::STYLE_HIGHLIGHTED0)
+            .value("STYLE_HIGHLIGHTED1", GraphicElement::STYLE_HIGHLIGHTED1)
+            .value("STYLE_HIGHLIGHTED2", GraphicElement::STYLE_HIGHLIGHTED2)
+            .value("STYLE_HIGHLIGHTED3", GraphicElement::STYLE_HIGHLIGHTED3)
+            .value("STYLE_HIGHLIGHTED4", GraphicElement::STYLE_HIGHLIGHTED4)
+            .value("STYLE_HIGHLIGHTED5", GraphicElement::STYLE_HIGHLIGHTED5)
+            .value("STYLE_HIGHLIGHTED6", GraphicElement::STYLE_HIGHLIGHTED6)
+            .value("STYLE_HIGHLIGHTED7", GraphicElement::STYLE_HIGHLIGHTED7)
+            .value("STYLE_SELECTED", GraphicElement::STYLE_SELECTED)
+            .value("STYLE_HOVER", GraphicElement::STYLE_HOVER)
             .export_values();
 
     py::class_<GraphicElement>(m, "GraphicElement")
@@ -119,10 +131,12 @@ PYBIND11_EMBEDDED_MODULE(MODULE_NAME, m)
                  py::arg("type"), py::arg("style"), py::arg("x1"), py::arg("y1"), py::arg("x2"), py::arg("y2"),
                  py::arg("z"))
             .def_readwrite("type", &GraphicElement::type)
+            .def_readwrite("style", &GraphicElement::style)
             .def_readwrite("x1", &GraphicElement::x1)
             .def_readwrite("y1", &GraphicElement::y1)
             .def_readwrite("x2", &GraphicElement::x2)
             .def_readwrite("y2", &GraphicElement::y2)
+            .def_readwrite("z", &GraphicElement::z)
             .def_readwrite("text", &GraphicElement::text);
 
     py::enum_<PortType>(m, "PortType")
