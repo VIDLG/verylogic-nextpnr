@@ -27,6 +27,7 @@ a.out
 *.il
 /generic/examples/blinky.png
 build/
+/dist/
 /deps/
 share/
 *.asc
