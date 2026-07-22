@@ -13,8 +13,8 @@ just = "*"
 ninja = "*"
 python = ">=3.9"
 qt6-main = ">=6,<7"
-rust = "*"
+rattler-build = "==0.70.0"
 xz = "*"
 
 [pypi-dependencies]
-apycula = "*"
+apycula = "==0.32"

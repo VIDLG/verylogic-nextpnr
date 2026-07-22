@@ -6,12 +6,11 @@ export PEPPERCORN_PATH=${DEPS_PATH}/prjpeppercorn
 
 
 function get_dependencies {
-    # Fetch prjxray-db
-    git clone https://github.com/openXC7/prjxray-db ${XRAY_DB_PATH}
-    # Fetch apycula
-    pip install --break-system-packages apycula
-    # Fetch prjpeppercorn
-    git clone https://github.com/YosysHQ/prjpeppercorn ${PEPPERCORN_PATH}
+    # These generators only need the current database snapshots, not repository history.
+    git clone --depth 1 https://github.com/openXC7/prjxray-db ${XRAY_DB_PATH}
+    # Fetch the Apycula database version pinned by the workflow.
+    pip install --disable-pip-version-check --break-system-packages "apycula==${APYCULA_REVISION}"
+    git clone --depth 1 https://github.com/YosysHQ/prjpeppercorn ${PEPPERCORN_PATH}
 }
 
 function build_nextpnr {

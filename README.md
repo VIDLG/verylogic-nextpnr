@@ -27,6 +27,7 @@ Here is a screenshot of nextpnr for iCE40. Build instructions and
 See also:
 - [F.A.Q.](docs/faq.md)
 - [Architecture API](docs/archapi.md)
+- [Supported FPGA families and devices (简体中文)](docs/supported-devices.zh-CN.md)
 
 
 Prerequisites

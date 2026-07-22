@@ -11,9 +11,9 @@ if (-not $envRoot) {
 Remove-Item $dist -Recurse -Force -ErrorAction SilentlyContinue
 New-Item $dist -ItemType Directory | Out-Null
 
-Copy-Item (Join-Path $root "build/pixi-ice40/nextpnr-ice40.exe") $dist
-Copy-Item (Join-Path $root "build/pixi-full/nextpnr-himbaechel.exe") $dist
-Copy-Item (Join-Path $root "build/pixi-full/share") (Join-Path $dist "share") -Recurse
+Copy-Item (Join-Path $root "build/pixi-fpga/nextpnr-ice40.exe") $dist
+Copy-Item (Join-Path $root "build/pixi-fpga/nextpnr-himbaechel.exe") $dist
+Copy-Item (Join-Path $root "build/pixi-fpga/share") (Join-Path $dist "share") -Recurse
 
 # Deploy Qt plugins and libraries for the GUI-enabled Himbaechel/Gowin binary.
 $libraryBin = Join-Path $envRoot "Library/bin"

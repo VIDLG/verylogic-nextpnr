@@ -4,15 +4,28 @@ name: Arch CI tests
 
 on:
   push:
+    branches: [main]
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
   pull_request:
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
   workflow_dispatch:
+
+concurrency:
+  group: arch-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   Build-nextpnr:
     strategy:
       fail-fast: false
+      # Pull requests exercise the two architectures shipped by VeryLogic.
+      # Main and manual builds retain the complete upstream architecture matrix.
       matrix:
-        arch: [mistral, ice40, ecp5, generic, nexus, machxo2, himbaechel, rust]
+        arch: ${{ fromJSON(github.event_name == 'pull_request' && '["ice40", "himbaechel"]' || '["mistral", "ice40", "ecp5", "generic", "nexus", "machxo2", "himbaechel", "rust"]') }}
     runs-on: ubuntu-latest
     env:
       DEPS_PATH: ${{ github.workspace }}/deps
@@ -21,23 +34,66 @@ jobs:
       TRELLIS_REVISION: 36c615d1740473cc3574464c7f0bed44da20e5b6
       PRJOXIDE_REVISION: be5891272a783f6c7d890da7f8dbf663dcaf61f4
       MISTRAL_REVISION: ebfc0dd2cc7d6d2159b641a397c88554840e93c9
-      APYCULA_REVISION: 0.8.2a1
+      APYCULA_REVISION: "0.32"
+      CCACHE_DIR: ${{ github.workspace }}/.ccache/${{ matrix.arch }}
+      CCACHE_MAXSIZE: 500M
+      CMAKE_CXX_COMPILER_LAUNCHER: ccache
     steps:
     - uses: actions/checkout@v4
-      with:
-        submodules: recursive
+
+    - name: Checkout regression tests
+      if: contains(fromJSON('["ice40", "ecp5", "generic", "rust"]'), matrix.arch)
+      run: git submodule update --init --depth 1 tests
+
+    - name: Checkout GoogleTest
+      if: matrix.arch == 'ice40'
+      run: git submodule update --init --depth 1 3rdparty/googletest
+
+    - name: Checkout Corrosion
+      if: matrix.arch == 'rust'
+      run: git submodule update --init --depth 1 3rdparty/corrosion
+
+    - name: Checkout Himbaechel Xilinx metadata
+      if: matrix.arch == 'himbaechel'
+      run: git submodule update --init --depth 1 himbaechel/uarch/xilinx/meta
 
     - uses: actions/setup-python@v5
       with:
         python-version: '3.12'
-    - name: Install
+    - name: Install common build dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install git make cmake libboost-all-dev python3-dev pypy3 libeigen3-dev tcl-dev lzma-dev libftdi-dev clang bison flex swig qt6-base-dev iverilog libreadline-dev liblzma-dev cargo rustc
+        sudo apt-get install --no-install-recommends git make cmake ccache libboost-program-options-dev libboost-iostreams-dev libboost-thread-dev python3-dev libeigen3-dev libreadline-dev liblzma-dev
+
+    - name: Install synthesis and regression dependencies
+      if: contains(fromJSON('["ice40", "ecp5", "generic", "rust"]'), matrix.arch)
+      run: sudo apt-get install --no-install-recommends clang bison flex tcl-dev iverilog
+
+    - name: Install GUI build dependencies
+      if: matrix.arch == 'ice40' || matrix.arch == 'ecp5'
+      run: sudo apt-get install --no-install-recommends qt6-base-dev
+
+    - name: Install architecture-specific dependencies
+      if: contains(fromJSON('["ice40", "ecp5", "machxo2", "nexus", "rust"]'), matrix.arch)
+      run: |
+        case "${{ matrix.arch }}" in
+          ice40) sudo apt-get install --no-install-recommends libftdi-dev ;;
+          ecp5|machxo2) sudo apt-get install --no-install-recommends swig libboost-filesystem-dev libboost-python-dev ;;
+          nexus|rust) sudo apt-get install --no-install-recommends cargo rustc ;;
+        esac
+
+    - name: Cache C++ compilation
+      uses: actions/cache@v4
+      with:
+        path: .ccache/${{ matrix.arch }}
+        key: ccache-${{ runner.os }}-${{ matrix.arch }}-${{ github.sha }}
+        restore-keys: |
+          ccache-${{ runner.os }}-${{ matrix.arch }}-
 
     - name: Cache yosys installation
       uses: actions/cache@v4
       id: cache-yosys
+      if: contains(fromJSON('["ice40", "ecp5", "generic", "rust"]'), matrix.arch)
       with:
         path: .yosys
         key: cache-yosys-${{ env.YOSYS_REVISION }}-r3
@@ -46,7 +102,7 @@ jobs:
       run: |
         source ./.github/ci/build_common.sh
         build_yosys
-      if: steps.cache-yosys.outputs.cache-hit != 'true'
+      if: contains(fromJSON('["ice40", "ecp5", "generic", "rust"]'), matrix.arch) && steps.cache-yosys.outputs.cache-hit != 'true'
 
     - name: Cache icestorm installation
       uses: actions/cache@v4
@@ -98,13 +154,15 @@ jobs:
         run_tests
         run_archcheck
 
+    - name: Show ccache statistics
+      if: always()
+      run: ccache --show-stats
+
   Windows-artifacts:
     name: Windows x64 binaries
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v4
-      with:
-        submodules: recursive
 
     - uses: prefix-dev/setup-pixi@v0.10.0
       with:
@@ -112,13 +170,8 @@ jobs:
         frozen: true
         cache: true
 
-    - name: Build standalone binaries
-      run: |
-        pixi run just build-ice40
-        pixi run just build-full
-
-    - name: Package and test standalone binaries
-      run: pixi run pwsh -NoProfile -File .github/ci/package_windows.ps1
+    - name: Build, package, and test standalone binaries
+      run: pixi run just package
 
     - name: Upload Windows binaries
       uses: actions/upload-artifact@v4

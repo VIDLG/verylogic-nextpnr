@@ -1,0 +1,58 @@
+context:
+  name: verylogic-nextpnr
+  version: ${{ env.get("VERYLOGIC_NEXTPNR_VERSION", default="0.1.0") }}
+
+package:
+  name: ${{ name }}
+  version: ${{ version }}
+
+source:
+  - path: ..
+    target_directory: source
+  - url: https://files.pythonhosted.org/packages/7d/5f/eb484a60a206098de747f8c3b232646e5bfe2fdd7ac5ef334ca162808dac/apycula-0.32-py3-none-any.whl
+    sha256: 9842eef0bb54d316f7a75d883d19bf042ed423c0c6f5d5f078c64e0c9e5f9c51
+    file_name: apycula-0.32-py3-none-any.whl
+
+build:
+  number: 0
+  skip: ${{ not win }}
+  script: build.bat
+
+requirements:
+  build:
+    - ${{ compiler('cxx') }}
+    - cmake >=3.25
+    - git
+    - ninja
+  host:
+    - boost-cpp
+    - cattrs
+    - eigen
+    - msgpack-python
+    - msgspec
+    - numpy
+    - pip
+    - python 3.12.*
+    - qt6-main >=6,<7
+  run:
+    - boost-cpp
+    - python >=3.12,<3.13
+    - qt6-main >=6,<7
+
+tests:
+  - script:
+      - nextpnr-ice40 --version
+      - nextpnr-ice40 --lp384 --package qn32 --test
+      - nextpnr-himbaechel --version
+      - nextpnr-himbaechel --device "GW1N-LV1QN48C6/I5" --test
+
+about:
+  homepage: https://github.com/VIDLG/verylogic-nextpnr
+  repository: https://github.com/VIDLG/verylogic-nextpnr
+  license: ISC
+  license_file: source/COPYING
+  summary: VeryLogic nextpnr binaries for iCE40 LP384 and Gowin GW1N-1
+  description: |
+    A focused Windows build of nextpnr used by VeryLogic. It provides the
+    iCE40 LP384 backend and the Himbaechel/Gowin GW1N-1 backend, including
+    their required FPGA device databases and the Qt/Python-enabled GUI runtime.

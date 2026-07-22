@@ -1,4 +1,5 @@
 /objs/
+/.codegraph/
 /nextpnr-generic*
 /nextpnr-ice40*
 /nextpnr-ecp5*
@@ -29,6 +30,7 @@ a.out
 build/
 /dist/
 /deps/
+__pycache__/
 share/
 *.asc
 *.bin

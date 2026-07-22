@@ -3,12 +3,13 @@
 export MISTRAL_PATH=${DEPS_PATH}/mistral
 
 function get_dependencies {
-    # Fetch mistral
+    # Fetch only the pinned Mistral revision and its required submodules.
     mkdir -p ${MISTRAL_PATH}
-    git clone --recursive https://github.com/Ravenslofty/mistral.git ${MISTRAL_PATH}
-    pushd ${MISTRAL_PATH}
-    git reset --hard ${MISTRAL_REVISION}
-    popd
+    git init --quiet ${MISTRAL_PATH}
+    git -C ${MISTRAL_PATH} remote add origin https://github.com/Ravenslofty/mistral.git
+    git -C ${MISTRAL_PATH} fetch --depth 1 origin ${MISTRAL_REVISION}
+    git -C ${MISTRAL_PATH} checkout --detach FETCH_HEAD
+    git -C ${MISTRAL_PATH} submodule update --init --recursive --depth 1
 }
 
 function build_nextpnr {
