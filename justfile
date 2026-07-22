@@ -1,5 +1,5 @@
 build_dir := "build/pixi-fpga"
-conda_output := "dist/conda"
+conda_output := env_var_or_default("VERYLOGIC_CONDA_OUTPUT", "dist/conda")
 exe_suffix := if os() == "windows" { ".exe" } else { "" }
 
 default: build
