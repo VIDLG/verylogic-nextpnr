@@ -23,10 +23,6 @@ if not defined SCCACHE_CACHE_SIZE set "SCCACHE_CACHE_SIZE=1G"
 set "SCCACHE_BASEDIRS=%SOURCE_ROOT%"
 set "SCCACHE_CONF=%SRC_DIR%\sccache-config.toml"
 type nul > "%SCCACHE_CONF%"
-sccache --start-server
-if errorlevel 1 exit /b 1
-sccache --zero-stats
-if errorlevel 1 exit /b 1
 
 cmake -S "%SOURCE_ROOT%" -B "%BUILD_TREE%" -G Ninja ^
   "-DARCH=ice40;himbaechel" ^
@@ -47,9 +43,16 @@ cmake -S "%SOURCE_ROOT%" -B "%BUILD_TREE%" -G Ninja ^
   "-DCURRENT_GIT_VERSION=%PKG_VERSION%"
 if errorlevel 1 exit /b 1
 
-cmake --build "%BUILD_TREE%" --parallel --target nextpnr-ice40 nextpnr-himbaechel
+sccache --start-server
 if errorlevel 1 exit /b 1
+sccache --zero-stats
+if errorlevel 1 exit /b 1
+cmake --build "%BUILD_TREE%" --parallel --target nextpnr-ice40 nextpnr-himbaechel
+set "BUILD_STATUS=%ERRORLEVEL%"
 sccache --show-stats
+sccache --stop-server
+if errorlevel 1 exit /b 1
+if not "%BUILD_STATUS%"=="0" exit /b %BUILD_STATUS%
 
 cmake --install "%BUILD_TREE%"
 if errorlevel 1 exit /b 1

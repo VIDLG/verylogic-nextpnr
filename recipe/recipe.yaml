@@ -16,7 +16,11 @@ source:
 build:
   number: 0
   skip: ${{ not win }}
-  script: build.bat
+  script:
+    file: build.bat
+    env:
+      SCCACHE_CACHE_SIZE: ${{ env.get("SCCACHE_CACHE_SIZE", default="1G") }}
+      SCCACHE_DIR: ${{ env.get("SCCACHE_DIR", default="") }}
 
 requirements:
   build:

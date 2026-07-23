@@ -27,13 +27,13 @@ package: build
 
 # Build the win-64 conda package, then install and smoke-test it from a local channel.
 conda-build:
-    cmake -E remove_directory {{conda_output}}
-    rattler-build build --recipe recipe/recipe.yaml --target-platform win-64 --output-dir {{conda_output}} --channel conda-forge --package-format conda --test skip
-    python tools/test_conda_package.py {{conda_output}}
+    cmake -E remove_directory "{{conda_output}}"
+    rattler-build build --recipe recipe/recipe.yaml --target-platform win-64 --output-dir "{{conda_output}}" --channel conda-forge --package-format conda --test skip
+    python tools/test_conda_package.py "{{conda_output}}"
 
 # Re-run the package smoke tests against the existing local package.
 conda-test:
-    python tools/test_conda_package.py {{conda_output}}
+    python tools/test_conda_package.py "{{conda_output}}"
 
 clean:
     cmake -E remove_directory {{build_dir}}
