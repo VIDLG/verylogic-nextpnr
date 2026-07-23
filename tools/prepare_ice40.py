@@ -9,14 +9,14 @@ import sys
 from pathlib import Path
 
 
-REPOSITORY = "https://github.com/YosysHQ/icestorm"
 REVISION = "68044cc4dac829729ccd0ee88d0780525b515746"
 ROOT = Path(__file__).resolve().parent.parent
 ICESTORM = ROOT / "deps" / "icestorm"
-ICEBOX = ICESTORM / "icebox"
-CHIPDB = ICEBOX / "chipdb-384.txt"
-TIMING = ICEBOX / "timings_lp384.txt"
-STAMP = ICEBOX / ".verylogic-ice40-384-revision"
+SOURCE_ICEBOX = ICESTORM / "icebox"
+OUTPUT_ICEBOX = ROOT / "deps" / "icebox"
+CHIPDB = OUTPUT_ICEBOX / "chipdb-384.txt"
+TIMING = OUTPUT_ICEBOX / "timings_lp384.txt"
+STAMP = OUTPUT_ICEBOX / ".verylogic-ice40-384-revision"
 
 
 def run(*args: str, capture_output: bool = False) -> subprocess.CompletedProcess[str]:
@@ -28,34 +28,35 @@ def run(*args: str, capture_output: bool = False) -> subprocess.CompletedProcess
     )
 
 
-def git(*args: str, capture_output: bool = False) -> subprocess.CompletedProcess[str]:
-    return run("git", "-C", str(ICESTORM), *args, capture_output=capture_output)
-
-
 def ensure_checkout() -> None:
-    if not (ICESTORM / ".git").is_dir():
-        ICESTORM.mkdir(parents=True, exist_ok=True)
-        _ = git("init", "--quiet")
-        _ = git("remote", "add", "origin", REPOSITORY)
+    if (ROOT / ".git").exists():
+        _ = run(
+            "git",
+            "-C",
+            str(ROOT),
+            "submodule",
+            "update",
+            "--init",
+            "--depth",
+            "1",
+            "deps/icestorm",
+        )
+    if (ICESTORM / ".git").exists():
+        current = run(
+            "git", "-C", str(ICESTORM), "rev-parse", "HEAD", capture_output=True
+        ).stdout.strip()
+        if current != REVISION:
+            raise RuntimeError(
+                f"IceStorm submodule is at {current}, expected pinned revision {REVISION}"
+            )
 
-    revision_exists = subprocess.run(
-        ["git", "-C", str(ICESTORM), "cat-file", "-e", f"{REVISION}^{{commit}}"],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-        check=False,
-    ).returncode == 0
-    if not revision_exists:
-        _ = git("fetch", "--depth", "1", "origin", REVISION)
-
-    current_result = subprocess.run(
-        ["git", "-C", str(ICESTORM), "rev-parse", "--verify", "HEAD"],
-        text=True,
-        capture_output=True,
-        check=False,
-    )
-    current = current_result.stdout.strip() if current_result.returncode == 0 else ""
-    if current != REVISION:
-        _ = git("checkout", "--detach", REVISION)
+    required = [
+        SOURCE_ICEBOX / "icebox_chipdb.py",
+        ICESTORM / "icefuzz" / "timings_lp384.txt",
+    ]
+    missing = [path for path in required if not path.is_file()]
+    if missing:
+        raise RuntimeError(f"IceStorm submodule is incomplete: missing {missing}")
 
 
 def is_current() -> bool:
@@ -72,7 +73,7 @@ def generate_chipdb() -> None:
     try:
         with temporary.open("w", encoding="utf-8", newline="\n") as output:
             _ = subprocess.run(
-                [sys.executable, str(ICEBOX / "icebox_chipdb.py"), "-3"],
+                [sys.executable, str(SOURCE_ICEBOX / "icebox_chipdb.py"), "-3"],
                 check=True,
                 stdout=output,
                 text=True,
@@ -84,6 +85,7 @@ def generate_chipdb() -> None:
 
 def main() -> None:
     ensure_checkout()
+    OUTPUT_ICEBOX.mkdir(parents=True, exist_ok=True)
     if is_current():
         print(f"IceStorm LP384 database is up to date at {REVISION[:8]}")
         return

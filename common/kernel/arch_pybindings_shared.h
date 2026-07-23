@@ -124,6 +124,21 @@ fn_wrapper_0a<Context, decltype(&Context::getChipName), &Context::getChipName, p
 fn_wrapper_0a<Context, decltype(&Context::archId), &Context::archId, conv_to_str<IdString>>::def_wrap(ctx_cls,
                                                                                                       "archId");
 
+ctx_cls.def("getPackagePins", [](Context &ctx) {
+    py::list pins;
+    for (const std::string &pin : PythonPackagePins::get_package_pins(ctx, 0))
+        pins.append(pin);
+    return pins;
+});
+ctx_cls.def("getPackagePinBel", [](Context &ctx, const std::string &pin) {
+    BelId bel = PythonPackagePins::get_package_pin_bel(ctx, pin, 0);
+    return bel == BelId() ? std::string() : ctx.getBelName(bel).str(&ctx);
+});
+ctx_cls.def("getBelPackagePin", [](Context &ctx, const std::string &name) {
+    BelId bel = ctx.getBelByName(IdStringList::parse(&ctx, name));
+    return bel == BelId() ? std::string() : PythonPackagePins::get_bel_package_pin(ctx, bel, 0);
+});
+
 fn_wrapper_2a_v<Context, decltype(&Context::writeSVG), &Context::writeSVG, pass_through<std::string>,
                 pass_through<std::string>>::def_wrap(ctx_cls, "writeSVG");
 

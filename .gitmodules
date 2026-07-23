@@ -10,3 +10,12 @@
 [submodule "3rdparty/googletest"]
 	path = 3rdparty/googletest
 	url = https://github.com/google/googletest.git
+[submodule "deps/icestorm"]
+	path = deps/icestorm
+	url = https://github.com/YosysHQ/icestorm.git
+[submodule "deps/apicula"]
+	path = deps/apicula
+	url = https://github.com/YosysHQ/apicula.git
+[submodule "deps/prjxray-db"]
+	path = deps/prjxray-db
+	url = https://github.com/openXC7/prjxray-db.git

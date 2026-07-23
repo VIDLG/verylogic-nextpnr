@@ -36,6 +36,62 @@ NEXTPNR_NAMESPACE_BEGIN
 
 namespace py = pybind11;
 
+namespace PythonPackagePins {
+
+template <typename Ctx> std::string pin_name(Ctx &, const std::string &pin) { return pin; }
+
+template <typename Ctx, typename PinInfo>
+auto pin_name(Ctx &ctx, const PinInfo *pin) -> decltype(IdString(pin->package_pin).str(&ctx))
+{
+    return pin == nullptr ? std::string() : IdString(pin->package_pin).str(&ctx);
+}
+
+template <typename Ctx>
+auto get_package_pin_bel(Ctx &ctx, const std::string &pin, int) -> decltype(ctx.get_package_pin_bel(pin))
+{
+    return ctx.get_package_pin_bel(pin);
+}
+
+template <typename Ctx>
+auto get_package_pin_bel(Ctx &ctx, const std::string &pin, long) -> decltype(ctx.get_package_pin_bel(ctx.id(pin)))
+{
+    return ctx.get_package_pin_bel(ctx.id(pin));
+}
+
+template <typename Ctx> BelId get_package_pin_bel(Ctx &, const std::string &, ...) { return BelId(); }
+
+template <typename Ctx>
+auto get_bel_package_pin(Ctx &ctx, BelId bel, int) -> decltype(ctx.get_bel_package_pin_name(bel))
+{
+    return ctx.get_bel_package_pin_name(bel);
+}
+
+template <typename Ctx>
+auto get_bel_package_pin(Ctx &ctx, BelId bel, long) -> decltype(pin_name(ctx, ctx.get_bel_package_pin(bel)))
+{
+    return pin_name(ctx, ctx.get_bel_package_pin(bel));
+}
+
+template <typename Ctx> std::string get_bel_package_pin(Ctx &, BelId, ...) { return std::string(); }
+
+template <typename Ctx> auto get_package_pins(Ctx &ctx, int) -> decltype(ctx.get_package_pins())
+{
+    return ctx.get_package_pins();
+}
+
+template <typename Ctx> std::vector<std::string> get_package_pins(Ctx &ctx, ...)
+{
+    std::vector<std::string> pins;
+    for (BelId bel : ctx.getBels()) {
+        std::string pin = get_bel_package_pin(ctx, bel, 0);
+        if (!pin.empty())
+            pins.push_back(pin);
+    }
+    return pins;
+}
+
+} // namespace PythonPackagePins
+
 std::string parse_python_exception();
 
 template <typename Tn> void python_export_global(const char *name, Tn &x)

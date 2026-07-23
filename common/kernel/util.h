@@ -23,11 +23,25 @@
 #include <map>
 #include <set>
 #include <string>
+#ifdef _WIN32
+#include <string.h>
+#else
+#include <strings.h>
+#endif
 #include "nextpnr.h"
 
 #include "log.h"
 
 NEXTPNR_NAMESPACE_BEGIN
+
+inline int string_case_compare(const char *lhs, const char *rhs)
+{
+#ifdef _WIN32
+    return _stricmp(lhs, rhs);
+#else
+    return strcasecmp(lhs, rhs);
+#endif
+}
 
 // Get a value from a map-style container, returning default if value is not
 // found
@@ -113,9 +127,9 @@ bool boolstr_or_default(const dict<KeyType, Property> &ct, const KeyType &key, b
     if (!found->second.is_string)
         bool(found->second.as_int64());
     const char *str = found->second.as_string().c_str();
-    if (!strcmp(str, "0") || !strcasecmp(str, "false"))
+    if (!strcmp(str, "0") || !string_case_compare(str, "false"))
         return false;
-    else if (!strcmp(str, "1") || !strcasecmp(str, "true"))
+    else if (!strcmp(str, "1") || !string_case_compare(str, "true"))
         return true;
     else
         log_error("Expecting bool-compatible value but got '%s'.\n", found->second.as_string().c_str());

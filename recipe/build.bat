@@ -17,6 +17,10 @@ if errorlevel 1 exit /b 1
 
 "%PYTHON%" "%SOURCE_ROOT%\tools\prepare_ice40.py"
 if errorlevel 1 exit /b 1
+"%PYTHON%" "%SOURCE_ROOT%\tools\prepare_apicula.py"
+if errorlevel 1 exit /b 1
+"%PYTHON%" "%SOURCE_ROOT%\tools\prepare_xilinx.py"
+if errorlevel 1 exit /b 1
 
 if not defined SCCACHE_DIR set "SCCACHE_DIR=%SRC_DIR%\sccache-cache"
 if not defined SCCACHE_CACHE_SIZE set "SCCACHE_CACHE_SIZE=1G"
@@ -27,9 +31,12 @@ type nul > "%SCCACHE_CONF%"
 cmake -S "%SOURCE_ROOT%" -B "%BUILD_TREE%" -G Ninja ^
   "-DARCH=ice40;himbaechel" ^
   "-DICE40_DEVICES=384" ^
-  "-DICEBOX_DATADIR=%SOURCE_ROOT%\deps\icestorm\icebox" ^
-  "-DHIMBAECHEL_UARCH=gowin" ^
+  "-DICEBOX_DATADIR=%SOURCE_ROOT%\deps\icebox" ^
+  "-DHIMBAECHEL_UARCH=gowin;xilinx" ^
   "-DHIMBAECHEL_GOWIN_DEVICES=GW1N-1" ^
+  "-DHIMBAECHEL_XILINX_DEVICES=xc7a100t" ^
+  "-DHIMBAECHEL_PRJXRAY_DB=%SOURCE_ROOT%\deps\prjxray-db" ^
+  "-DXilinxChipdb_Python3_EXECUTABLE=%PYTHON%" ^
   -DBUILD_GUI=ON ^
   -DBUILD_PYTHON=ON ^
   -DBUILD_RUST=OFF ^

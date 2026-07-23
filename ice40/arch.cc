@@ -497,6 +497,15 @@ std::vector<std::pair<IdString, std::string>> Arch::getPipAttrs(PipId pip) const
 
 // -----------------------------------------------------------------------
 
+std::vector<std::string> Arch::get_package_pins() const
+{
+    std::vector<std::string> pins;
+    pins.reserve(package_info->pins.size());
+    for (const auto &ppin : package_info->pins)
+        pins.emplace_back(ppin.name.get());
+    return pins;
+}
+
 BelId Arch::get_package_pin_bel(const std::string &pin) const
 {
     for (auto &ppin : package_info->pins) {

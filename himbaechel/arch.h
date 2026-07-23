@@ -902,8 +902,10 @@ struct Arch : BaseArch<ArchRanges>
 
     // -------------------------------------------------
     IdString get_tile_type(int tile) const;
+    std::vector<std::string> get_package_pins() const;
     const PadInfoPOD *get_package_pin(IdString pin) const;
     const PadInfoPOD *get_bel_package_pin(BelId bel) const;
+    std::string get_bel_package_pin_name(BelId bel) const;
     BelId get_package_pin_bel(IdString pin) const;
 
     // Load capacitance and drive resistance for nodes

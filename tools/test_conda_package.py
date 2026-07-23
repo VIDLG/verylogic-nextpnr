@@ -69,7 +69,8 @@ def main() -> None:
                 "nextpnr-ice40 --version && "
                 "nextpnr-ice40 --lp384 --package qn32 --test && "
                 "nextpnr-himbaechel --version && "
-                "nextpnr-himbaechel --device GW1N-LV1QN48C6/I5 --test",
+                "nextpnr-himbaechel --device GW1N-LV1QN48C6/I5 --test && "
+                "nextpnr-himbaechel --device xc7a100tcsg324-1 --test",
             ],
             check=True,
         )

@@ -1,7 +1,6 @@
 context:
-  ice40_revision: 68044cc4dac829729ccd0ee88d0780525b515746
   name: verylogic-nextpnr
-  version: ${{ env.get("VERYLOGIC_NEXTPNR_VERSION", default="0.1.1") }}
+  version: ${{ env.get("VERYLOGIC_NEXTPNR_VERSION", default="0.1.2") }}
 
 package:
   name: ${{ name }}
@@ -10,9 +9,6 @@ package:
 source:
   - path: ..
     target_directory: source
-  - git: https://github.com/YosysHQ/icestorm
-    rev: ${{ ice40_revision }}
-    target_directory: source/deps/icestorm
   - url: https://files.pythonhosted.org/packages/7d/5f/eb484a60a206098de747f8c3b232646e5bfe2fdd7ac5ef334ca162808dac/apycula-0.32-py3-none-any.whl
     sha256: 9842eef0bb54d316f7a75d883d19bf042ed423c0c6f5d5f078c64e0c9e5f9c51
     file_name: apycula-0.32-py3-none-any.whl
@@ -55,14 +51,16 @@ tests:
       - nextpnr-ice40 --lp384 --package qn32 --test
       - nextpnr-himbaechel --version
       - nextpnr-himbaechel --device "GW1N-LV1QN48C6/I5" --test
+      - nextpnr-himbaechel --device xc7a100tcsg324-1 --test
 
 about:
   homepage: https://github.com/VIDLG/verylogic-nextpnr
   repository: https://github.com/VIDLG/verylogic-nextpnr
   license: ISC
   license_file: source/COPYING
-  summary: VeryLogic nextpnr binaries for iCE40 LP384 and Gowin GW1N-1
+  summary: VeryLogic nextpnr binaries for iCE40, Gowin, and Xilinx 7-series
   description: |
     A focused Windows build of nextpnr used by VeryLogic. It provides the
-    iCE40 LP384 backend and the Himbaechel/Gowin GW1N-1 backend, including
-    their required FPGA device databases and the Qt/Python-enabled GUI runtime.
+    iCE40 LP384 backend, Himbaechel/Gowin GW1N-1, and Himbaechel/Xilinx
+    XC7A100T, including their required FPGA device databases and the
+    Qt/Python-enabled GUI runtime.

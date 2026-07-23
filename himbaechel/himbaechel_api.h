@@ -114,6 +114,8 @@ struct HimbaechelAPI
                                      std::vector<std::pair<CellInfo *, BelId>> &placement) const;
 
     // Graphics
+    virtual bool graphicsElementsAreTileLocal() const { return false; }
+
     virtual void drawBel(std::vector<GraphicElement> &g, GraphicElement::style_t style, IdString bel_type, Loc loc) {};
 
     virtual void drawWire(std::vector<GraphicElement> &g, GraphicElement::style_t style, Loc loc, IdString wire_type,

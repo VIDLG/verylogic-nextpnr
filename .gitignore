@@ -29,7 +29,11 @@ a.out
 /generic/examples/blinky.png
 build/
 /dist/
-/deps/
+*.log
+/deps/*
+!/deps/icestorm
+!/deps/apicula
+!/deps/prjxray-db
 __pycache__/
 share/
 *.asc

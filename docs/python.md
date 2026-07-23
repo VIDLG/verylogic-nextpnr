@@ -23,6 +23,10 @@ Likewise, the architecture identifiers `BelId`, `WireId` and `PipId` are also tr
 
 To query the FPGA architecture, use the functions described in the [Architecture API documentation](archapi.md). Ranges can be iterated over in the same way as any other Python range.
 
+## Package Pins
+
+The selected package's bonded pins can be enumerated as strings using `ctx.getPackagePins()`. `ctx.getPackagePinBel(pin)` returns the corresponding BEL name, and `ctx.getBelPackagePin(bel)` performs the reverse lookup. An unknown pin or a valid unbonded BEL returns an empty string. These APIs return copied Python strings and lists rather than architecture-specific package database objects.
+
 ## Architecture Graphics
 
 BELs, wires, PIPs and groups can be enumerated using `ctx.getBels()`, `ctx.getWires()`, `ctx.getPips()` and `ctx.getGroups()`. These methods return stable resource names; the same names are accepted by the corresponding decal methods:

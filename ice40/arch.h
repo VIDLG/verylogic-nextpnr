@@ -780,6 +780,7 @@ struct Arch : BaseArch<ArchRanges>
         return range;
     }
 
+    std::vector<std::string> get_package_pins() const;
     BelId get_package_pin_bel(const std::string &pin) const;
     std::string get_bel_package_pin(BelId bel) const;
 

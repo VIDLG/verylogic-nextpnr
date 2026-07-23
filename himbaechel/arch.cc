@@ -555,6 +555,16 @@ TimingClockingInfo Arch::get_port_clocking_info_default(const CellInfo *cell, Id
     return result;
 }
 
+std::vector<std::string> Arch::get_package_pins() const
+{
+    NPNR_ASSERT(package_info);
+    std::vector<std::string> pins;
+    pins.reserve(package_info->pads.size());
+    for (const auto &pad : package_info->pads)
+        pins.push_back(IdString(pad.package_pin).str(this));
+    return pins;
+}
+
 const PadInfoPOD *Arch::get_package_pin(IdString pin) const
 {
     NPNR_ASSERT(package_info);
@@ -576,6 +586,12 @@ const PadInfoPOD *Arch::get_bel_package_pin(BelId bel) const
     return nullptr;
 }
 
+std::string Arch::get_bel_package_pin_name(BelId bel) const
+{
+    const PadInfoPOD *pad = get_bel_package_pin(bel);
+    return pad == nullptr ? std::string() : IdString(pad->package_pin).str(this);
+}
+
 BelId Arch::get_package_pin_bel(IdString pin) const
 {
     auto pin_data = get_package_pin(pin);
@@ -593,15 +609,28 @@ IdString Arch::get_tile_type(int tile) const
 std::vector<GraphicElement> Arch::getDecalGraphics(DecalId decal) const
 {
     std::vector<GraphicElement> ret;
+    bool tile_local = uarch->graphicsElementsAreTileLocal();
+    int origin_x = 0, origin_y = 0;
+    if (tile_local)
+        tile_xy(chip_info, decal.tile, origin_x, origin_y);
     if (decal.type == DecalId::TYPE_GROUP) {
         GroupId group(decal.tile, decal.index);
         Loc loc;
         tile_xy(chip_info, decal.tile, loc.x, loc.y);
+        if (tile_local) {
+            loc.x -= origin_x;
+            loc.y -= origin_y;
+        }
         uarch->drawGroup(ret, group, loc);
     } else if (decal.type == DecalId::TYPE_BEL) {
         BelId bel(decal.tile, decal.index);
         GraphicElement::style_t style = decal.active ? GraphicElement::STYLE_ACTIVE : GraphicElement::STYLE_INACTIVE;
-        uarch->drawBel(ret, style, getBelType(bel), getBelLocation(bel));
+        Loc loc = getBelLocation(bel);
+        if (tile_local) {
+            loc.x -= origin_x;
+            loc.y -= origin_y;
+        }
+        uarch->drawBel(ret, style, getBelType(bel), loc);
     } else if (decal.type == DecalId::TYPE_WIRE) {
         WireId w(decal.tile, decal.index);
         for (WireId wire : get_tile_wire_range(w)) {
@@ -610,6 +639,10 @@ std::vector<GraphicElement> Arch::getDecalGraphics(DecalId decal) const
                     decal.active ? GraphicElement::STYLE_ACTIVE : GraphicElement::STYLE_INACTIVE;
             Loc loc;
             tile_xy(chip_info, wire.tile, loc.x, loc.y);
+            if (tile_local) {
+                loc.x -= origin_x;
+                loc.y -= origin_y;
+            }
             int32_t tilewire = chip_wire_info(chip_info, wire).tile_wire;
             uarch->drawWire(ret, style, loc, wire_type, tilewire, get_tile_type(wire.tile));
         }
@@ -618,6 +651,10 @@ std::vector<GraphicElement> Arch::getDecalGraphics(DecalId decal) const
         WireId src_wire = getPipSrcWire(pip);
         WireId dst_wire = getPipDstWire(pip);
         Loc loc = getPipLocation(pip);
+        if (tile_local) {
+            loc.x -= origin_x;
+            loc.y -= origin_y;
+        }
         int32_t src_id = chip_wire_info(chip_info, src_wire).tile_wire;
         int32_t dst_id = chip_wire_info(chip_info, dst_wire).tile_wire;
         GraphicElement::style_t style = decal.active ? GraphicElement::STYLE_ACTIVE : GraphicElement::STYLE_HIDDEN;
@@ -632,6 +669,12 @@ DecalXY Arch::getBelDecal(BelId bel) const
     DecalXY decalxy;
     decalxy.decal = DecalId(bel.tile, bel.index, DecalId::TYPE_BEL);
     decalxy.decal.active = getBoundBelCell(bel) != nullptr;
+    if (uarch->graphicsElementsAreTileLocal()) {
+        int x, y;
+        tile_xy(chip_info, bel.tile, x, y);
+        decalxy.x = x;
+        decalxy.y = y;
+    }
     return decalxy;
 }
 
@@ -640,6 +683,12 @@ DecalXY Arch::getWireDecal(WireId wire) const
     DecalXY decalxy;
     decalxy.decal = DecalId(wire.tile, wire.index, DecalId::TYPE_WIRE);
     decalxy.decal.active = getBoundWireNet(wire) != nullptr;
+    if (uarch->graphicsElementsAreTileLocal()) {
+        int x, y;
+        tile_xy(chip_info, wire.tile, x, y);
+        decalxy.x = x;
+        decalxy.y = y;
+    }
     return decalxy;
 }
 
@@ -648,6 +697,12 @@ DecalXY Arch::getPipDecal(PipId pip) const
     DecalXY decalxy;
     decalxy.decal = DecalId(pip.tile, pip.index, DecalId::TYPE_PIP);
     decalxy.decal.active = getBoundPipNet(pip) != nullptr;
+    if (uarch->graphicsElementsAreTileLocal()) {
+        int x, y;
+        tile_xy(chip_info, pip.tile, x, y);
+        decalxy.x = x;
+        decalxy.y = y;
+    }
     return decalxy;
 }
 
@@ -656,6 +711,12 @@ DecalXY Arch::getGroupDecal(GroupId group) const
     DecalXY decalxy;
     decalxy.decal = DecalId(group.tile, group.index, DecalId::TYPE_GROUP);
     decalxy.decal.active = true;
+    if (uarch->graphicsElementsAreTileLocal()) {
+        int x, y;
+        tile_xy(chip_info, group.tile, x, y);
+        decalxy.x = x;
+        decalxy.y = y;
+    }
     return decalxy;
 }
 

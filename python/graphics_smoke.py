@@ -53,6 +53,17 @@ assert pips
 assert isinstance(groups, list)
 assert isinstance(list(ctx.getBelPins(bels[0])), list)
 
+package_pins = ctx.getPackagePins()
+assert isinstance(package_pins, list)
+assert package_pins
+assert all(isinstance(pin, str) and pin for pin in package_pins)
+assert len(package_pins) == len(set(package_pins))
+for pin in package_pins:
+    bel = ctx.getPackagePinBel(pin)
+    assert isinstance(bel, str) and bel
+    assert ctx.getBelPackagePin(bel) == pin
+assert ctx.getPackagePinBel("__nextpnr_unknown_package_pin__") == ""
+
 if groups:
     group_members = (
         ctx.getGroupBels(groups[0]),
@@ -106,5 +117,6 @@ if not found_graphics:
 assert found_graphics
 print(
     "graphics smoke test passed: "
-    f"{len(bels)} BELs, {len(wires)} wires, {len(pips)} PIPs, {len(groups)} groups"
+    f"{len(bels)} BELs, {len(wires)} wires, {len(pips)} PIPs, "
+    f"{len(groups)} groups, {len(package_pins)} package pins"
 )

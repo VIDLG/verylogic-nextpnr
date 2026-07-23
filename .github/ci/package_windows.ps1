@@ -15,7 +15,7 @@ Copy-Item (Join-Path $root "build/pixi-fpga/nextpnr-ice40.exe") $dist
 Copy-Item (Join-Path $root "build/pixi-fpga/nextpnr-himbaechel.exe") $dist
 Copy-Item (Join-Path $root "build/pixi-fpga/share") (Join-Path $dist "share") -Recurse
 
-# Deploy Qt plugins and libraries for the GUI-enabled Himbaechel/Gowin binary.
+# Deploy Qt plugins and libraries for the GUI-enabled Himbaechel binary.
 $libraryBin = Join-Path $envRoot "Library/bin"
 $windeployqt = Join-Path $libraryBin "windeployqt6.exe"
 $qtpathsAlias = Join-Path $dist "qtpaths.exe"
@@ -87,4 +87,8 @@ if ($LASTEXITCODE -ne 0) {
 & (Join-Path $dist "nextpnr-himbaechel.exe") --device GW1N-LV1QN48C6/I5 --run python/graphics_smoke.py
 if ($LASTEXITCODE -ne 0) {
     throw "Packaged Gowin graphics smoke test failed with exit code $LASTEXITCODE."
+}
+& (Join-Path $dist "nextpnr-himbaechel.exe") --device xc7a100tcsg324-1 --run python/graphics_smoke.py
+if ($LASTEXITCODE -ne 0) {
+    throw "Packaged Xilinx graphics smoke test failed with exit code $LASTEXITCODE."
 }
