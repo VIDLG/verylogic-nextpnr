@@ -20,7 +20,7 @@ if errorlevel 1 exit /b 1
 
 if not defined SCCACHE_DIR set "SCCACHE_DIR=%SRC_DIR%\sccache-cache"
 if not defined SCCACHE_CACHE_SIZE set "SCCACHE_CACHE_SIZE=1G"
-set "SCCACHE_BASEDIRS=%SOURCE_ROOT%"
+set "SCCACHE_BASEDIRS=%SRC_DIR%"
 set "SCCACHE_CONF=%SRC_DIR%\sccache-config.toml"
 type nul > "%SCCACHE_CONF%"
 
