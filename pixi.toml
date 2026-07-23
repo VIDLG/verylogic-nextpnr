@@ -18,3 +18,12 @@ xz = "*"
 
 [pypi-dependencies]
 apycula = "==0.32"
+
+[feature.conda-package.dependencies]
+cmake = ">=3.25"
+just = "*"
+python = ">=3.12,<3.13"
+rattler-build = "==0.70.0"
+
+[environments]
+conda-package = { features = ["conda-package"], no-default-feature = true }
