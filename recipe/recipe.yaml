@@ -1,7 +1,7 @@
 context:
   ice40_revision: 68044cc4dac829729ccd0ee88d0780525b515746
   name: verylogic-nextpnr
-  version: ${{ env.get("VERYLOGIC_NEXTPNR_VERSION", default="0.1.0") }}
+  version: ${{ env.get("VERYLOGIC_NEXTPNR_VERSION", default="0.1.1") }}
 
 package:
   name: ${{ name }}
@@ -19,6 +19,7 @@ source:
 
 build:
   number: 0
+  string: py${{ python | version_to_buildstring }}h${{ hash }}_${{ build_number }}
   skip: ${{ not win }}
   script:
     file: build.bat
@@ -41,11 +42,11 @@ requirements:
     - msgspec
     - numpy
     - pip
-    - python 3.12.*
+    - python ${{ python }}.*
     - qt6-main >=6,<7
   run:
     - boost-cpp
-    - python >=3.12,<3.13
+    - python ${{ python }}.*
     - qt6-main >=6,<7
 
 tests:
