@@ -17,6 +17,8 @@ def get_bel_z_override(bel, default_z):
             return (5 if is_top18 else 9)
         elif bt == "FIFO18E1_FIFO18E1":
             return 10
+        # Keep routing BELs clear of the fixed placement slots above.
+        return 16 + default_z
     if s.site_type() == "SLICEL" or s.site_type() == "SLICEM":
         is_upper_site = (s.rel_xy()[0] == 1)
         subslices = "ABCD"

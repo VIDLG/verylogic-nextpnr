@@ -202,6 +202,7 @@ def import_tiletype(ch: Chip, tile: xilinx_device.Tile):
 
     # TODO: ground/vcc
     tile_wire_count = len(tt.wires)
+    bel_names = set()
     for site in tile.sites():
         seen_pins = set()
         for variant_idx, variant in enumerate(site.available_variants()):
@@ -216,7 +217,15 @@ def import_tiletype(ch: Chip, tile: xilinx_device.Tile):
                 if z == -1:
                     continue
                 bel_name = gen_bel_name(sv, bel.name())
-                nb = tt.create_bel(name=f"{site.rel_name()}.{bel_name}", type=filters.get_bel_type_override(bel.bel_type()), z=z)
+                canonical_bel_name = f"{site.rel_name()}.{bel_name}"
+                if canonical_bel_name in bel_names:
+                    # Site variants can reuse a physical BEL name. Keep the
+                    # site-local name stable for packer/FASM lookups while
+                    # making the public name unambiguous.
+                    canonical_bel_name = f"{site.rel_name()}.{sv.site_type()}.{bel.name()}"
+                assert canonical_bel_name not in bel_names
+                bel_names.add(canonical_bel_name)
+                nb = tt.create_bel(name=canonical_bel_name, type=filters.get_bel_type_override(bel.bel_type()), z=z)
                 nb.site = variant_key
                 nb.extra_data = BelExtraData(name_in_site=ch.strs.id(bel_name))
                 if bel.bel_class() == "RBEL": nb.flags |= 2

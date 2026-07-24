@@ -243,6 +243,29 @@ void XilinxImpl::update_bram_bel(BelId bel, CellInfo *cell)
     tts.bts->cells[z] = cell;
 }
 
+IdString XilinxImpl::getPipNameExtra(PipId pip) const
+{
+    const auto &pip_data = chip_pip_info(ctx->chip_info, pip);
+    if (pip_data.flags != PIP_SITE_INTERNAL)
+        return IdString();
+    const auto &extra_data = *reinterpret_cast<const XlnxPipExtraDataPOD *>(pip_data.extra_data.get());
+    auto site = BelSiteKey::unpack(extra_data.site_key);
+    if (site.site_variant == 0)
+        return IdString();
+    const auto &site_data = tile_extra_data(pip.tile)->sites[site.site];
+    NPNR_ASSERT(site.site_variant < site_data.variants.ssize());
+    return IdString(site_data.variants[site.site_variant]);
+}
+
+bool XilinxImpl::isPipInverting(PipId pip) const
+{
+    const auto &pip_data = chip_pip_info(ctx->chip_info, pip);
+    if (pip_data.flags != PIP_SITE_INTERNAL)
+        return false;
+    const auto &extra_data = *reinterpret_cast<const XlnxPipExtraDataPOD *>(pip_data.extra_data.get());
+    return boost::ends_with(IdString(extra_data.pip_config).str(ctx), "_B");
+}
+
 bool XilinxImpl::is_pip_unavail(PipId pip) const
 {
     const auto &pip_data = chip_pip_info(ctx->chip_info, pip);

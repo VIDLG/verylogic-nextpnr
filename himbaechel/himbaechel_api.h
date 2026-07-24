@@ -95,6 +95,7 @@ struct HimbaechelAPI
     virtual bool checkWireAvail(WireId wire) const { return true; }
     virtual bool checkPipAvail(PipId pip) const { return true; }
     virtual bool checkPipAvailForNet(PipId pip, const NetInfo *net) const { return checkPipAvail(pip); };
+    virtual IdString getPipNameExtra(PipId pip) const { return IdString(); }
     virtual bool isPipInverting(PipId pip) const { return false; }
 
     // --- Route lookahead ---

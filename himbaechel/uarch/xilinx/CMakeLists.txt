@@ -66,6 +66,12 @@ foreach (device ${HIMBAECHEL_XILINX_DEVICES})
             ${CMAKE_CURRENT_BINARY_DIR}/chipdb-${device}.bba
         INPUTS
             ${CMAKE_CURRENT_SOURCE_DIR}/gen/xilinx_gen.py
+            ${CMAKE_CURRENT_SOURCE_DIR}/gen/filters.py
+            ${CMAKE_CURRENT_SOURCE_DIR}/gen/parse_sdf.py
+            ${CMAKE_CURRENT_SOURCE_DIR}/gen/tileconn.py
+            ${CMAKE_CURRENT_SOURCE_DIR}/gen/xilinx_device.py
+            ${CMAKE_CURRENT_SOURCE_DIR}/../../himbaechel_dbgen/bba.py
+            ${CMAKE_CURRENT_SOURCE_DIR}/../../himbaechel_dbgen/chip.py
             ${CMAKE_CURRENT_SOURCE_DIR}/constids.inc
     )
 

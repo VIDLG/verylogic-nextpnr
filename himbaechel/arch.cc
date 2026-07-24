@@ -350,7 +350,12 @@ IdStringList Arch::getWireName(WireId wire) const
 
 PipId Arch::getPipByName(IdStringList name) const
 {
-    NPNR_ASSERT(name.size() == 3 || (name.size() == 4 && name[3] == id("INV")));
+    NPNR_ASSERT(name.size() >= 3 && name.size() <= 5);
+    bool inverted = name[name.size() - 1] == id("INV");
+    int base_size = name.size() - (inverted ? 1 : 0);
+    NPNR_ASSERT(base_size == 3 || base_size == 4);
+    IdString extra = base_size == 4 ? name[3] : IdString();
+
     const int tile = tile_name2idx.at(name[0]);
     const auto &tdata = chip_tile_info(chip_info, tile);
     for (int pip = 0; pip < tdata.pips.ssize(); pip++) {
@@ -358,9 +363,8 @@ PipId Arch::getPipByName(IdStringList name) const
             IdString(tdata.wires[tdata.pips[pip].src_wire].name) == name[2]) {
 
             const auto tmp_pip = PipId(tile, pip);
-            if ((name.size() == 3 && !isPipInverting(tmp_pip)) || (name.size() == 4 && isPipInverting(tmp_pip))) {
+            if (isPipInverting(tmp_pip) == inverted && uarch->getPipNameExtra(tmp_pip) == extra)
                 return tmp_pip;
-            }
         }
     }
     return PipId();
@@ -370,11 +374,14 @@ IdStringList Arch::getPipName(PipId pip) const
 {
     const auto &tdata = chip_tile_info(chip_info, pip.tile);
     const auto &pdata = tdata.pips[pip.index];
-    const auto name = IdStringList::concat(tile_name.at(pip.tile),
-                                           IdStringList::concat(IdString(tdata.wires[pdata.dst_wire].name),
-                                                                IdString(tdata.wires[pdata.src_wire].name)));
+    auto name = IdStringList::concat(tile_name.at(pip.tile),
+                                     IdStringList::concat(IdString(tdata.wires[pdata.dst_wire].name),
+                                                          IdString(tdata.wires[pdata.src_wire].name)));
+    IdString extra = uarch->getPipNameExtra(pip);
+    if (extra != IdString())
+        name = IdStringList::concat(name, extra);
     if (isPipInverting(pip))
-        return IdStringList::concat(name, id("INV"));
+        name = IdStringList::concat(name, id("INV"));
     return name;
 }
 

@@ -125,6 +125,8 @@ struct XilinxImpl : HimbaechelAPI
 
     // Pips
     bool is_pip_unavail(PipId pip) const;
+    IdString getPipNameExtra(PipId pip) const override;
+    bool isPipInverting(PipId pip) const override;
     bool checkPipAvail(PipId pip) const override { return !is_pip_unavail(pip); }
     bool checkPipAvailForNet(PipId pip, const NetInfo *net) const override { return !is_pip_unavail(pip); }
 
